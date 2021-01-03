@@ -6,7 +6,7 @@ import cv2
 import pytesseract
 import csv
 from corner import white_box
-
+import json
 # Mention the installed location of Tesseract-OCR in your system
 pytesseract.pytesseract.tesseract_cmd = 'F:/c++opencv/finalProject/tesseract/tesseract.exe'
 window = tk.Tk()
@@ -19,7 +19,7 @@ path = None
 save_face = None
 save_text = None
 save_img = None
-
+json_object=None
 
 def save_image():
     filename = asksaveasfile(mode='w',
@@ -35,7 +35,7 @@ def save_image():
 
 
 def file_save():
-    # f = asksaveasfile(mode='wb', defaultextension=".txt")
+    # f = asksavw_a(mode='wb', defaultextension=".txt")
     # if f is None:  # asksaveasfile return `None` if dialog closed with "cancel".
     #     return
     # global save_text
@@ -44,41 +44,22 @@ def file_save():
     # f.close()  # `()` was missing.
     a = white_box().black_box(cv2.imread(path))
     # university name
-    uName = white_box().toText(a.copy()[27:27 + 58 - 27,
-                                        103:103 + 570 - 103])[:-2]
+    label=[]
+    data=[]
+    for i in json_object:
+        if isinstance(json_object[i],list):
+            y,x,y1,x1=json_object[i]
+            data.append(white_box().toText(a[y:y1,x:x1])[:-2])
+            label.append(i)
 
-    # name
-    pName = white_box().toText(a.copy()[127:127 + 173 - 127,
-                                        273:273 + 472 - 273])[:-2]
-
-    # birthday
-    pBirthDay = white_box().toText(a.copy()[165:209, 305:501])[:-2]
-
-    # major
-    pMajor = white_box().toText(a.copy()[205:244, 301:550])[:-2]
-
-    # year of admission
-    pYear = white_box().toText(a.copy()[261:290, 332:410])[:-2]
-
-    # ID
-    pId = white_box().toText(a.copy()[374:433, 36:200])[:-2]
-
+    # dictionary
+    dictionary = dict(zip(label, data))
     with open('cardInfo.csv', mode='w', encoding='utf-8-sig') as csv_file:
-        fieldnames = [
-            'university', 'name', 'birthday', 'major', 'year of admission',
-            'ID'
-        ]
+        fieldnames = label
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         writer.writeheader()
 
-        writer.writerow({
-            'university': uName,
-            'name': pName,
-            'birthday': pBirthDay,
-            'major': pMajor,
-            'year of admission': pYear,
-            'ID': pId
-        })
+        writer.writerow(dictionary)
 
 
 def text_extraction(path):
@@ -93,24 +74,14 @@ def text_extraction(path):
 def face(image):
     face_classifier = cv2.CascadeClassifier(
         'haarcascade_frontalface_default.xml')
-
-    # Load our image then convert it to grayscale
-    # image = cv2.imread(path)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    # Our classifier returns the ROI of the detected face as a tuple
-    # It stores the top left coordinate and the bottom right coordiantes
     faces = face_classifier.detectMultiScale(gray, 1.3, 5)
-
-    # When no faces detected, face_classifier returns and empty tuple
     if faces is ():
         print("No faces found")
         return (False, False)
-
-    # We iterate through our faces array and draw a rectangle
-    # over each face in faces
     for (x, y, w, h) in faces:
-        x = x - 25  # Padding trick to take the whole face not just Haarcascades points
-        y = y - 40  # Same here...
+        x = x - 25  
+        y = y - 40  
         c = image[y:(y + h + 70), x:(x + w + 50)]
         cv2.rectangle(image, (x, y), (x + w + 50, y + h + 70), (27, 200, 10),
                       2)
@@ -297,7 +268,11 @@ def frm4_text():
     global save_text
     save_text = text
 
-
+def json_load():
+    filename = askopenfilename(title='open json file')
+    global json_object
+    json_object=json.load(open(filename))
+    print()
 # config
 frm1.rowconfigure(0, weight=1)
 frm1.columnconfigure(0, weight=1)
@@ -317,6 +292,7 @@ filemenu3.add_command(label='Save text', command=file_save)
 filemenu3.add_command(label='Save face image', command=save_image)
 
 filemenu.add_command(label='Open image...', command=frm1_image)
+filemenu.add_cascade(label='Open json file...',command=json_load)
 filemenu1.add_command(label='Extract face from image', command=frm3_image)
 filemenu1.add_command(label='Perspective transform', command=frm2_image)
 filemenu1.add_command(label='Show extracted text', command=frm4_text)
