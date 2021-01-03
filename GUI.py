@@ -19,15 +19,14 @@ path = None
 save_face = None
 save_text = None
 save_img = None
-json_object=None
+json_object = None
+
 
 def save_image():
     filename = asksaveasfile(mode='w',
                              defaultextension='.jpg',
                              filetypes=[('image files', ('.jpg'))])
-    # filename = asksaveasfile(mode='w',
-    #                          defaultextension='.csv',
-    #                          filetypes=[('image files', ('.csv'))])
+
     if not filename:
         return
     global save_face
@@ -35,21 +34,14 @@ def save_image():
 
 
 def file_save():
-    # f = asksavw_a(mode='wb', defaultextension=".txt")
-    # if f is None:  # asksaveasfile return `None` if dialog closed with "cancel".
-    #     return
-    # global save_text
-    # a = save_text.encode('utf-8')
-    # f.write(a)
-    # f.close()  # `()` was missing.
     a = white_box().black_box(cv2.imread(path))
     # university name
-    label=[]
-    data=[]
+    label = []
+    data = []
     for i in json_object:
-        if isinstance(json_object[i],list):
-            y,x,y1,x1=json_object[i]
-            data.append(white_box().toText(a[y:y1,x:x1])[:-2])
+        if isinstance(json_object[i], list):
+            y, x, y1, x1 = json_object[i]
+            data.append(white_box().toText(a[y:y1, x:x1])[:-2])
             label.append(i)
 
     # dictionary
@@ -80,8 +72,8 @@ def face(image):
         print("No faces found")
         return (False, False)
     for (x, y, w, h) in faces:
-        x = x - 25  
-        y = y - 40  
+        x = x - 25
+        y = y - 40
         c = image[y:(y + h + 70), x:(x + w + 50)]
         cv2.rectangle(image, (x, y), (x + w + 50, y + h + 70), (27, 200, 10),
                       2)
@@ -268,11 +260,14 @@ def frm4_text():
     global save_text
     save_text = text
 
+
 def json_load():
     filename = askopenfilename(title='open json file')
     global json_object
-    json_object=json.load(open(filename))
+    json_object = json.load(open(filename))
     print()
+
+
 # config
 frm1.rowconfigure(0, weight=1)
 frm1.columnconfigure(0, weight=1)
@@ -292,7 +287,7 @@ filemenu3.add_command(label='Save text', command=file_save)
 filemenu3.add_command(label='Save face image', command=save_image)
 
 filemenu.add_command(label='Open image...', command=frm1_image)
-filemenu.add_cascade(label='Open json file...',command=json_load)
+filemenu.add_cascade(label='Open json file...', command=json_load)
 filemenu1.add_command(label='Extract face from image', command=frm3_image)
 filemenu1.add_command(label='Perspective transform', command=frm2_image)
 filemenu1.add_command(label='Show extracted text', command=frm4_text)
