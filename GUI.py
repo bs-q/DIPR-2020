@@ -55,7 +55,6 @@ def file_save():
 
 
 def text_extraction(path):
-    # large = cv2.imread(path)
     large = white_box().black_box(cv2.imread(path))
     text = pytesseract.image_to_string(large,
                                        lang='vie',
@@ -254,9 +253,19 @@ def frm4_text():
     frm4.delete(1.0, tk.END)
     frm4.insert(1.0, 'Please wait...')
     frm4.update()
-    text = text_extraction(path)
+    a = white_box().black_box(cv2.imread(path))
+    # university name
+    label = []
+    data = []
+    for i in json_object:
+        if isinstance(json_object[i], list):
+            y, x, y1, x1 = json_object[i]
+            data.append(white_box().toText(a[y:y1, x:x1])[:-2])
+            label.append(i)
+    # text = text_extraction(path)
     frm4.delete(1.0, tk.END)
-    frm4.insert(1.0, text)
+    for i in range(len(label)):
+        frm4.insert(tk.END, label[i]+':'+data[i]+'\n')
     global save_text
     save_text = text
 
@@ -283,14 +292,14 @@ menubar = tk.Menu(window)
 filemenu = tk.Menu(menubar, tearoff=0)
 filemenu1 = tk.Menu(menubar, tearoff=0)
 filemenu3 = tk.Menu(menubar, tearoff=0)
-filemenu3.add_command(label='Save text', command=file_save)
+filemenu3.add_command(label='Save info', command=file_save)
 filemenu3.add_command(label='Save face image', command=save_image)
 
 filemenu.add_command(label='Open image...', command=frm1_image)
 filemenu.add_cascade(label='Open json file...', command=json_load)
 filemenu1.add_command(label='Extract face from image', command=frm3_image)
 filemenu1.add_command(label='Perspective transform', command=frm2_image)
-filemenu1.add_command(label='Show extracted text', command=frm4_text)
+filemenu1.add_command(label='Show extracted info', command=frm4_text)
 menubar.add_cascade(label='file', menu=filemenu)
 menubar.add_cascade(label='function', menu=filemenu1)
 menubar.add_cascade(label='save', menu=filemenu3)
